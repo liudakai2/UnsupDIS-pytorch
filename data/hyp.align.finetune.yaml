@@ -1,0 +1,22 @@
+# Hyperparameters for COCO training from scratch
+# python train.py --batch 40 --cfg yolov5m.yaml --weights '' --data coco.yaml --img 640 --epochs 300
+# See tutorials for hyperparameter evolution https://github.com/ultralytics/yolov5#tutorials
+
+
+lr0: 0.00005  # initial learning rate (SGD=1E-2, Adam=1E-3)
+lrf: 0.9  # final OneCycleLR learning rate (lr0 * lrf)
+momentum: 0.9  # SGD momentum/Adam beta1
+weight_decay: 0.0005  # optimizer weight decay 5e-4
+warmup_epochs: 0.0  # warmup epochs (fractions ok)
+warmup_momentum: 0.8  # warmup initial momentum
+warmup_bias_lr: 0.1  # warmup initial bias lr
+hsv_h: 0.005  # image HSV-Hue augmentation (fraction)
+hsv_s: 0.1  # image HSV-Saturation augmentation (fraction)
+hsv_v: 0.05  # image HSV-Value augmentation (fraction)
+degrees: 0 #.02  # image rotation (+/- deg)
+translate: 0 #.05  # image translation (+/- fraction)
+scale: 0 #.02  # image scale (+/- gain)
+shear: 0 #.005  # image shear (+/- deg)
+perspective: 0 #.0002  # image perspective (+/- fraction), range 0-0.001
+flipud: 0.0  # image flip up-down (probability)
+fliplr: 0.5  # image flip left-right (probability)

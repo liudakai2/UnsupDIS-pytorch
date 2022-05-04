@@ -1,0 +1,4 @@
+# train and val data as 1) directory: path/images/, 2) file: path/images.txt, or 3) list: [path1/images/, path2/images/]
+train: ./data/WarpedCOCO/train.txt  # 4K images
+val: ./data/WarpedCOCO/test.txt  # 700 imageS
+test: ./data/WarpedCOCO/test.txt
