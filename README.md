@@ -32,9 +32,9 @@ WarpedCOCO/training/input1/000001.jpg  WarpedCOCO/training/input2/000001.jpg  Wa
 
 
 ## Training, Testing, and Inference
-Run the commands below to go through the whole process of unsupervised deep image stitching. 
+Run the commands below to go through the whole process of unsupervised deep image stitching. Some alternative commands are displayed in [main.sh](main.sh).
 
-Download the pretrained backbones ([YOLOv5s](https://github.com/ultralytics/yolov5/releases/download/v5.0/yolov5s.pt), [YOLOv5m](https://github.com/ultralytics/yolov5/releases/download/v5.0/yolov5m.pt), [YOLOv5l](https://github.com/ultralytics/yolov5/releases/download/v5.0/yolov5l.pt), [YOLOv5x](https://github.com/ultralytics/yolov5/releases/download/v5.0/yolov5x.pt)) and put them to the `weights/` directory first. You can modify the `depth_multiple` and `width_multiple` in `models/*.yaml` to choose which backbone to use.
+Download the pretrained backbones ([YOLOv5s](https://github.com/ultralytics/yolov5/releases/download/v5.0/yolov5s.pt), [YOLOv5m](https://github.com/ultralytics/yolov5/releases/download/v5.0/yolov5m.pt), [YOLOv5l](https://github.com/ultralytics/yolov5/releases/download/v5.0/yolov5l.pt), [YOLOv5x](https://github.com/ultralytics/yolov5/releases/download/v5.0/yolov5x.pt)) and put them to the `weights/` directory first. You can modify the `depth_multiple` and `width_multiple` in `models/*.yaml` to choose which backbone to use. 
 
 #### Step 1 (Alignment): Unsupervised pre-training on Stitched MS-COCO
 
