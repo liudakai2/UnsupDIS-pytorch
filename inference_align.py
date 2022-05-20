@@ -149,9 +149,9 @@ def infer():
             # cv2.imwrite(str(warp2_dir / (img_name + '.jpg')), warped_right)
             # cv2.imwrite(str(mask2_dir / (img_name + '.png')), mask_right)
             cv2.imwrite(str(save_dir / (img_name + '_warp1.jpg')), warped_left)
-            cv2.imwrite(str(save_dir / (img_name + '_mask1.jpg')), mask_left)
+            cv2.imwrite(str(save_dir / (img_name + '_mask1.png')), mask_left)
             cv2.imwrite(str(save_dir / (img_name + '_warp2.jpg')), warped_right)
-            cv2.imwrite(str(save_dir / (img_name + '_mask2.jpg')), mask_right)
+            cv2.imwrite(str(save_dir / (img_name + '_mask2.png')), mask_right)
                 
     print("RMSE: %.4f" % (np.mean(rmse))) if len(rmse) > 0 else None
 
