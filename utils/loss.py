@@ -9,11 +9,12 @@ from utils.general import img_torch2numpy
 
 
 class ComputeAlignLoss:
-    def __init__(self, model):
+    def __init__(self, model, loss_weight):
         super(ComputeAlignLoss, self).__init__()
         
         # self.hyp = model.hyp  # hyperparameters
-        self.scales = [16., 4., 1.]
+        self.scales = loss_weight
+        # self.scales = [16., 4., 1.]
         # self.scales = [1., 4., 16.]
     
     def __call__(self, pred, images):  # for consistency
