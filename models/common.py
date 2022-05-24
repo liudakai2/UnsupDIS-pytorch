@@ -26,14 +26,31 @@ def DWConvWoBN(c1, c2, k=1, s=1, p=None, act=True):
 
 class Conv(nn.Module):
     # Standard convolution
-    def __init__(self, c1, c2, k=1, s=1, p=None, g=1, act=True, d=1):  # ch_in, ch_out, kernel, stride, padding, groups
+    def __init__(self, c1, c2, k=1, s=1, norm='BN', p=None, g=1, act=True, d=1):  # ch_in, ch_out, kernel, stride, padding, groups
         super(Conv, self).__init__()
         self.conv = nn.Conv2d(c1, c2, k, s, autopad(k, p), dilation=d, groups=g, bias=False)
-        self.bn = nn.BatchNorm2d(c2)
+        self.norm_type = norm
+        if norm == 'BN':
+            self.norm = nn.BatchNorm2d(c2)
+        elif norm == 'IN':
+            self.norm = nn.InstanceNorm2d(c2)
+        elif norm == 'HIN':
+            self.norm = nn.InstanceNorm2d(c2 // 2)
+        else:
+            self.norm = None
         self.act = nn.SiLU() if act is True else (act if isinstance(act, nn.Module) else nn.Identity())
 
     def forward(self, x):
-        return self.act(self.bn(self.conv(x)))
+        out = self.conv(x)
+        if self.norm is not None:
+            if self.norm_type == 'HIN':
+                out1, out2 = torch.chunk(out, 2, dim = 1)
+                out2 = self.norm(out2)
+                out = torch.cat((out1, out2), dim = 1)
+            else:
+                out = self.norm(out)
+        out = self.act(out)
+        return out
 
     def fuseforward(self, x):
         return self.act(self.conv(x))
@@ -317,7 +334,6 @@ class SPP(nn.Module):
     def forward(self, x):
         x = self.cv1(x)
         return self.cv2(torch.cat([x] + [m(x) for m in self.m], 1))
-
 
 class ASPP(nn.Module):
     # Atrous spatial pyramid pooling layer
