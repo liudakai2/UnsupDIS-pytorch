@@ -296,6 +296,134 @@ class HEstimatorOrigin(HEstimator):
         
         return sum(vertices_offsets), warped_imgs, warped_msks
 
+class HEstimatorVariant(nn.Module):
+    def __init__(self, input_size=128, strides=(2,4,8), keep_prob=0.5, ch=()):
+        super(HEstimatorVariant, self).__init__()
+        self.ch = ch  # channels for multiple feature maps, e.g., [48, 96, 192] for yolov5m
+        self.stride = torch.tensor([4, 32])  # fake
+        self.input_size = input_size
+        self.strides = strides
+        self.search_ranges = [16, 8, 4]
+        self.patch_sizes = [32., 64., 128.]
+        # shape[2, 2, 3, 3]
+        self.aux_matrices = torch.stack([self.gen_aux_mat(patch_size) for patch_size in self.patch_sizes])
+        self.DLT_solver = DLTSolver()
+        
+        m = []
+        s = input_size // (128 // 8)
+        k, p = s, 0
+        for i, x in enumerate(ch[::-1]):  # manually calculate the channels
+            # ch1 = (self.search_ranges[i] * 2 + 1) ** 2
+            ch1 = x * 2
+            ch_conv = 512 // (2 ** i)
+            # ch_flat = (input_size // strides[-(i+1)] // s) ** 2 * ch_conv
+            ch_flat = (input_size // strides[-1] // s) ** 2 * ch_conv
+            # ch_flat = ch_conv * (s ** 2)
+            ch_fc = 512 // (2 ** i)
+            # print(x, ch1, ch_conv, ch_flat, ch_fc)
+            m.append(
+                nn.Sequential(
+                    Conv(ch1, ch_conv, k=3, s=1, norm='HIN'),
+                    Conv(ch_conv, ch_conv, k=3, s=2 if i >= 2 else 1, norm='HIN'),  # stage 2
+                    Conv(ch_conv, ch_conv, k=3, s=2 if i >= 1 else 1, norm='HIN'),  # stage 2 & 3
+                    DWConv(ch_conv, ch_conv, k=k, s=s, p=p),
+                    # nn.AvgPool2d(k, s, p),
+                    # nn.AdaptiveAvgPool2d((s, s)),
+                    nn.Flatten(),
+                    nn.Linear(ch_flat, ch_fc),
+                    nn.SiLU(),
+                    # nn.Dropout(keep_prob),
+                    nn.Linear(ch_fc, 8, bias=False)
+                )
+            )
+        self.m = nn.ModuleList(m)
+    
+    def forward(self, feature1, feature2, image2, mask2):
+        bs = image2.size(0)
+        assert len(self.search_ranges) == len(feature1) == len(feature2)
+        device, dtype = image2.device, image2.dtype
+        if self.aux_matrices.device != device:
+            self.aux_matrices = self.aux_matrices.to(device)
+        if self.aux_matrices.dtype != dtype:
+            self.aux_matrices = self.aux_matrices.type(dtype)
+            
+        vertices_offsets = []
+        for i, search_range in enumerate(self.search_ranges):
+            # global_correlation is either time-consuming or memory-consuming, and even leads to divergence
+            # concatenation seems to be capable enough for estimation
+            # x = self.cost_volume(feature1[-(i+1)], feature2[-(i+1)], search_range)
+            x = torch.cat((feature1[-(i+1)], feature2[-(i+1)]), dim=1)
+            
+            off = self.m[i](x).unsqueeze(-1)  # [bs, 8, 1], for matrix multiplication
+            assert torch.isnan(off).sum() == 0
+            
+            # off, overflow = self.clip_offset(off, vertices_offsets, phase=i)
+            vertices_offsets.append(off)
+            
+            if i == len(self.search_ranges) - 1:
+                break
+            
+            # H = self.DLT_solver.solve(sum(vertices_offsets) / (2 ** (2 - i)), self.patch_sizes[i])  # 2x up-scale
+            # M, M_inv = torch.chunk(self.aux_matrices[i], 2, dim=0)
+            # 4x down-scale for numerical stability
+            H = self.DLT_solver.solve(sum(vertices_offsets) / 4., self.patch_sizes[0])
+            M, M_inv = torch.chunk(self.aux_matrices[0], 2, dim=0)
+
+            H = torch.bmm(torch.bmm(M_inv.expand(bs, -1, -1), H), M.expand(bs, -1, -1))
+
+            feature2[-(i + 2)] = STN(feature2[-(i + 2)], H, vertices_offsets)
+
+        warped_imgs, warped_msks = [], []
+        patch_level = 0
+        M, M_inv = torch.chunk(self.aux_matrices[patch_level], 2, dim=0)
+        img_with_msk = torch.cat((image2, mask2), dim=1)
+        for i in range(len(vertices_offsets)):
+            H_inv = self.DLT_solver.solve(sum(vertices_offsets[:i+1]) / (2 ** (2 - patch_level)), self.patch_sizes[patch_level])
+            H = torch.bmm(torch.bmm(M_inv.expand(bs, -1, -1), H_inv), M.expand(bs, -1, -1))
+            warped_img, warped_msk = STN(img_with_msk, H, vertices_offsets[:i+1]).split([3, 1], dim=1)
+            warped_imgs.append(warped_img)
+            warped_msks.append(warped_msk)
+        
+        # the relationship (or definition) between `H` and `H_inv` is confusing
+        # H = torch.linalg.inv(H_inv.detach())
+        # H /= H[:, -1, -1]  # same as the results from cv2.getPerspectiveTransform(org, dst)
+        
+        return sum(vertices_offsets), warped_imgs, warped_msks
+
+    @staticmethod
+    def cost_volume(x1, x2, search_range, norm=True, fast=True):
+        if norm:
+            x1 = F.normalize(x1, p=2, dim=1)
+            x2 = F.normalize(x2, p=2, dim=1)
+        bs, c, h, w = x1.shape
+        padded_x2 = F.pad(x2, [search_range] * 4)  # [b,c,h,w] -> [b,c,h+sr*2,w+sr*2]
+        max_offset = search_range * 2 + 1
+
+        if fast:
+            # faster(*2) but cost higher(*n) GPU memory
+            patches = F.unfold(padded_x2, (max_offset, max_offset)).reshape(bs, c, max_offset ** 2, h, w)
+            cost_vol = (x1.unsqueeze(2) * patches).mean(dim=1, keepdim=False)
+        else:
+            # slower but save memory
+            cost_vol = []
+            for j in range(0, max_offset):
+                for i in range(0, max_offset):
+                    x2_slice = padded_x2[:, :, j:j + h, i:i + w]
+                    cost = torch.mean(x1 * x2_slice, dim=1, keepdim=True)
+                    cost_vol.append(cost)
+            cost_vol = torch.cat(cost_vol, dim=1)
+        
+        cost_vol = F.leaky_relu(cost_vol, 0.1)
+        
+        return cost_vol
+    
+    @staticmethod
+    def gen_aux_mat(patch_size):
+        M = np.array([[patch_size / 2.0, 0., patch_size / 2.0],
+                      [0., patch_size / 2.0, patch_size / 2.0],
+                      [0., 0., 1.]]).astype(np.float32)
+        M_inv = np.linalg.inv(M)
+        return torch.from_numpy(np.stack((M, M_inv)))  # [2, 3, 3]
 
 class Reconstructor(nn.Module):
     def __init__(self, ch=()):
@@ -452,7 +580,7 @@ def parse_model(d, ch):  # model_dict, input_channels(3)
             c2 = ch[f[0]] if isinstance(f, Iterable) else ch[f]
         elif m is Reconstructor:
             args.append([ch[x] for x in f])
-        elif m in [HEstimator, HEstimatorOrigin]:
+        elif m in [HEstimator, HEstimatorOrigin, HEstimatorVariant]:
             args.append(ch[f])
         elif m is Contract:
             c2 = ch[f] * args[0] ** 2
