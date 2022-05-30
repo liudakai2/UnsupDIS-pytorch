@@ -30,8 +30,8 @@ def parse_source(source, task, imgsz, reg_mode):
         img_name = base_name[:-4]
         img1 = cv2.imread(path.replace(base_name, f'{img_name}_warp1.jpg'))
         img2 = cv2.imread(path.replace(base_name, f'{img_name}_warp2.jpg'))
-        msk1 = cv2.imread(path.replace(base_name, f'{img_name}_mask1.jpg'))
-        msk2 = cv2.imread(path.replace(base_name, f'{img_name}_mask2.jpg'))
+        msk1 = cv2.imread(path.replace(base_name, f'{img_name}_mask1.png'))
+        msk2 = cv2.imread(path.replace(base_name, f'{img_name}_mask2.png'))
         image_raw = np.concatenate((img1, msk1[..., :1], img2, msk2[..., :1]), axis=-1)
         height, width, _ = img1.shape
         xyxy_raw = [0, 0, width, height]

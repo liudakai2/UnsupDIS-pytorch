@@ -181,8 +181,8 @@ class LoadImagePairs(Dataset):  # for training/testing
             img_name = base_name[:-4]
             img1 = cv2.imread(path.replace(base_name, f'{img_name}_warp1.jpg'))
             img2 = cv2.imread(path.replace(base_name, f'{img_name}_warp2.jpg'))
-            msk1 = cv2.imread(path.replace(base_name, f'{img_name}_mask1.jpg'))
-            msk2 = cv2.imread(path.replace(base_name, f'{img_name}_mask2.jpg'))
+            msk1 = cv2.imread(path.replace(base_name, f'{img_name}_mask1.png'))
+            msk2 = cv2.imread(path.replace(base_name, f'{img_name}_mask2.png'))
             if self.img_size > 0:
                 if self.reg_mode == 'resize':
                     new_size = (self.img_size, self.img_size)
