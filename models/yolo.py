@@ -296,6 +296,7 @@ class HEstimatorOrigin(HEstimator):
         
         return sum(vertices_offsets), warped_imgs, warped_msks
 
+
 class HEstimatorVariant(nn.Module):
     def __init__(self, input_size=128, strides=(2,4,8), keep_prob=0.5, ch=()):
         super(HEstimatorVariant, self).__init__()
