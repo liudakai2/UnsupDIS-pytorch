@@ -13,8 +13,8 @@ class ComputeAlignLoss:
         super(ComputeAlignLoss, self).__init__()
         
         # self.hyp = model.hyp  # hyperparameters
-        # self.scales = [16., 4., 1.]
-        self.scales = [1., 4., 16.]
+        self.scales = [16., 4., 1.]
+        # self.scales = [1., 4., 16.]
     
     def __call__(self, pred, images):  # for consistency
         warped_imgs, warped_ones = pred[1:]
