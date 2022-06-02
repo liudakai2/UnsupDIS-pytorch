@@ -203,7 +203,7 @@ def train(opt):
     # nw = min(nw, (epochs - start_epoch) / 2 * nb)  # limit warmup to < 1/2 of training
     scheduler.last_epoch = start_epoch - 1  # do not move
     scaler = amp.GradScaler(enabled=cuda)
-    compute_loss = ComputeAlignLoss(model, opt.loss_weight) if mode_align else ComputeFuseLoss(model)  # init loss class
+    compute_loss = ComputeAlignLoss(model) if mode_align else ComputeFuseLoss(model)  # init loss class
     logger.info(f'Image sizes {imgsz} train, {imgsz_test} test\n'
                 f'Using {dataloader.num_workers} dataloader workers\n'
                 f'Logging results to {save_dir}\n'
@@ -348,7 +348,6 @@ if __name__ == '__main__':
     parser.add_argument('--mode', default='recon', choices=['align', 'fuse'], help='task mode, align or fuse')
     parser.add_argument('--auto-resume', nargs='?', const=True, default=False,
                         help='auto resume last training in case training broken. e.g., runs/train/exp/weights/last.pt')
-    parser.add_argument('--loss-weight', nargs='+', type=int, default=[16, 4, 1], help='The loss weight of the three regression network branches')
     opt = parser.parse_args()
 
     # Set DDP variables
