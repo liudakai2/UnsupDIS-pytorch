@@ -335,6 +335,7 @@ class SPP(nn.Module):
         x = self.cv1(x)
         return self.cv2(torch.cat([x] + [m(x) for m in self.m], 1))
 
+
 class ASPP(nn.Module):
     # Atrous spatial pyramid pooling layer
     def __init__(self, c1, c2, d=(1, 2, 4, 6)):
