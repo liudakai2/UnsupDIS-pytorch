@@ -10,6 +10,9 @@ weight_decay: 0.0005  # optimizer weight decay 5e-4
 warmup_epochs: 0.0  # warmup epochs (fractions ok)
 warmup_momentum: 0.8  # warmup initial momentum
 warmup_bias_lr: 0.1  # warmup initial bias lr
+loss_scale1: 16.  # loss gain for scale 1 (stride=8)
+loss_scale2: 4.   # loss gain for scale 2 (stride=4)
+loss_scale3: 1.   # loss gain for scale 3 (stride=2)
 hsv_h: 0.005  # image HSV-Hue augmentation (fraction)
 hsv_s: 0.1  # image HSV-Saturation augmentation (fraction)
 hsv_v: 0.05  # image HSV-Value augmentation (fraction)
