@@ -87,7 +87,7 @@ def test(data, weights=None, batch_size=32, imgsz=640, model=None, dataloader=No
             target_imgs = imgs[:, :3, ...]
             warped_imgs, warped_ones = pred[1][-1], pred[2][-1]
             for i, warped_mask in enumerate(warped_ones):
-                warped_mask = (warped_mask > 0).all(axis=0, keepdims=True).float()
+                warped_mask = (warped_mask > 0.5).all(axis=0, keepdims=True).float()
                 if warped_mask.sum() == 0:
                     crashed += 1
                     psnr_list.append(0)
