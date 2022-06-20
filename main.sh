@@ -2,11 +2,6 @@
 python3 train.py --data data/warpedcoco.yaml --hyp data/hyp.align.scratch.yaml --cfg models/align.yaml --weights weights/yolov5l.pt --batch-size 64 --img-size 128 --epochs 50 --adam --device 0 --mode align
 ## not recommended
 # python3 train.py --data data/warpedcoco.yaml --hyp data/hyp.align.scratch.yaml --cfg models/align_origin.yaml --weights '' --batch-size 16 --img-size 128 --epochs 50 --adam --device 0 --mode align
-## A variant of the align model with similar parameters that can achieve slightly better result, 
-## the original backbone from UDIS is used, Half Instance Normalization is adopted and loss weight is adjusted.
-## We've seen a +0.3db increase in PSNR and +0.01 in SSIM on WarpedCOCO, the training also seemed to be more stable.
-## Better results of +1.0db PSNR and +0.02 SSIM can be achieved with more convolution layers in regression net and more training epoches.
-# python3 train.py --data data/warpedcoco.yaml --hyp data/hyp.align.scratch.yaml --cfg models/align_variant.yaml --weights '' --batch-size 64 --img-size 128 --epochs 50 --adam --device 0 --mode align --loss-weight 1 4 16
 
 ## A variant of the align model with similar parameters that can achieve slightly better result, 
 ## the original backbone from UDIS is used, Half Instance Normalization is adopted and loss weight is adjusted.
