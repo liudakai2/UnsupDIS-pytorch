@@ -17,14 +17,15 @@ class ComputeAlignLoss:
         self.scales = [self.hyp['loss_scale1'], self.hyp['loss_scale2'], self.hyp['loss_scale3']]
     
     def __call__(self, pred, images):  # for consistency
+        eps = 0.01
         warped_imgs, warped_ones = pred[1:]
         target_image, target_mask = images[:, :3, ...], images[:, 3:4, ...]
-        target_mask = (target_mask > 0).expand(-1, 3, -1, -1)
+        target_mask = (target_mask > eps).expand(-1, 3, -1, -1)
         bs, device = images.shape[0], images.device
         
         loss_per_level = [torch.zeros(1, device=device) for _ in range(3)]
         for i, warped_img in enumerate(warped_imgs):
-            warped_mask = (warped_ones[i] > 0).expand(-1, 3, -1, -1)
+            warped_mask = (warped_ones[i] > eps).expand(-1, 3, -1, -1)
             if warped_mask.sum() == 0:
                 # return None, None
                 continue
