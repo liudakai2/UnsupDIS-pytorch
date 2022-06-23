@@ -67,6 +67,7 @@ def test(data, weights=None, batch_size=32, imgsz=640, model=None, dataloader=No
     else:
         s = ('%20s' + '%10s' * 6) % ('Images', 'cont_lr', 'seam_lr', 'cont_hr', 'seam_hr', 'consist', 'total')
     losses = torch.zeros(4 if mode_align else 6, device=device)
+    eps = 0.01
     for batch_i, imgs in enumerate(tqdm(dataloader, desc=s)):
         imgs = imgs.to(device, non_blocking=True).float() / 255.0  # uint8 to float32, 0-255 to 0.0-1.0
         if half:
@@ -87,7 +88,7 @@ def test(data, weights=None, batch_size=32, imgsz=640, model=None, dataloader=No
             target_imgs = imgs[:, :3, ...]
             warped_imgs, warped_ones = pred[1][-1], pred[2][-1]
             for i, warped_mask in enumerate(warped_ones):
-                warped_mask = (warped_mask > 0.5).all(axis=0, keepdims=True).float()
+                warped_mask = (warped_mask > eps).all(axis=0, keepdims=True).float()
                 if warped_mask.sum() == 0:
                     crashed += 1
                     psnr_list.append(0)

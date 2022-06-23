@@ -17,14 +17,15 @@ class ComputeAlignLoss:
         self.scales = [self.hyp['loss_scale1'], self.hyp['loss_scale2'], self.hyp['loss_scale3']]
     
     def __call__(self, pred, images):  # for consistency
+        eps = 0.01
         warped_imgs, warped_ones = pred[1:]
         target_image, target_mask = images[:, :3, ...], images[:, 3:4, ...]
-        target_mask = (target_mask > 0).expand(-1, 3, -1, -1)
+        target_mask = (target_mask > eps).expand(-1, 3, -1, -1)
         bs, device = images.shape[0], images.device
         
         loss_per_level = [torch.zeros(1, device=device) for _ in range(3)]
         for i, warped_img in enumerate(warped_imgs):
-            warped_mask = (warped_ones[i] > 0).expand(-1, 3, -1, -1)
+            warped_mask = (warped_ones[i] > eps).expand(-1, 3, -1, -1)
             if warped_mask.sum() == 0:
                 # return None, None
                 continue
@@ -123,6 +124,7 @@ class ComputeFuseLoss:
 
     def __call__(self, stitched, images):  # predictions, targets, model
         assert len(stitched) == 2
+        eps = 0.01
         stitched_lr, stitched_hr = stitched
         stride = stitched_hr.shape[-1] // stitched_lr.shape[-1]
         device = images.device
@@ -131,7 +133,7 @@ class ComputeFuseLoss:
         lconsistency = torch.zeros(1, device=device)
 
         image1, mask1, image2, mask2 = torch.split(images, [3, 1, 3, 1], dim=1)  # channel dimension
-        mask1, mask2 = (mask1 > 0.).int().type_as(images), (mask2 > 0.).int().type_as(images)  # binarize
+        mask1, mask2 = (mask1 > eps).int().type_as(images), (mask2 > eps).int().type_as(images)  # binarize
         seam1, seam2 = self.seam_extractor(mask1), self.seam_extractor(mask2)
         seam_mask1, seam_mask2 = (mask1 * seam2).expand(-1, 3, -1, -1), (mask2 * seam1).expand(-1, 3, -1, -1)
         image1_lr, image2_lr = self.downsample(image1, mode='bilinear', stride=stride), \
@@ -143,13 +145,13 @@ class ComputeFuseLoss:
 
         lcontent_lr += (self.ploss(stitched_lr, image1_lr, mask1_lr)[1] +
                         self.ploss(stitched_lr, image2_lr, mask2_lr)[1])
-        lseam_lr += (F.l1_loss(stitched_lr[seam_mask1_lr > 0], image1_lr[seam_mask1_lr > 0]) +
-                     F.l1_loss(stitched_lr[seam_mask2_lr > 0], image2_lr[seam_mask2_lr > 0]))
+        lseam_lr += (F.l1_loss(stitched_lr[seam_mask1_lr > eps], image1_lr[seam_mask1_lr > eps]) +
+                     F.l1_loss(stitched_lr[seam_mask2_lr > eps], image2_lr[seam_mask2_lr > eps]))
 
         lcontent_hr += (self.ploss(stitched_hr, image1, mask1)[0] +
                         self.ploss(stitched_hr, image2, mask2)[0])
-        lseam_hr += (F.l1_loss(stitched_hr[seam_mask1 > 0], image1[seam_mask1 > 0]) +
-                     F.l1_loss(stitched_hr[seam_mask2 > 0], image2[seam_mask2 > 0]))
+        lseam_hr += (F.l1_loss(stitched_hr[seam_mask1 > eps], image1[seam_mask1 > eps]) +
+                     F.l1_loss(stitched_hr[seam_mask2 > eps], image2[seam_mask2 > eps]))
 
         lconsistency += F.l1_loss(self.downsample(stitched_hr, mode='bilinear', stride=stride), stitched_lr)
 
