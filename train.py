@@ -103,7 +103,7 @@ def train(opt):
             v.requires_grad = False
 
     # Optimizer
-    nbs = 64 if mode_align else total_batch_size  # nominal batch size  # TODO: accumulate or not
+    nbs = total_batch_size if opt.accumulate_batch_size == 0 else opt.accumulate_batch_size  # nominal batch size  # TODO: accumulate or not
     accumulate = max(round(nbs / total_batch_size), 1)  # accumulate loss before optimizing
     hyp['weight_decay'] *= total_batch_size * accumulate / nbs  # scale weight_decay
     logger.info(f"Scaled weight_decay = {hyp['weight_decay']}")
@@ -332,6 +332,7 @@ if __name__ == '__main__':
     parser.add_argument('--hyp', type=str, default='data/hyp.scratch.yaml', help='hyperparameters path')
     parser.add_argument('--epochs', type=int, default=300)
     parser.add_argument('--batch-size', type=int, default=16, help='total batch size for all GPUs')
+    parser.add_argument('--accumulate-batch-size', type=int, default=0, help='the accumulated batch size before update weights, set to 0 to use batch-size')
     parser.add_argument('--img-size', nargs='+', type=int, default=[640, 640], help='[train, test] image sizes')
     parser.add_argument('--reg-mode', default='resize', choices=['resize', 'crop'], help='image regularization')
     parser.add_argument('--resume', nargs='?', const=True, default=False, help='resume most recent training')
