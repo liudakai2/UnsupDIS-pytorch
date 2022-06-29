@@ -178,7 +178,7 @@ class HEstimator(nn.Module):
     def cost_volume(x1, x2, search_range, norm=True, fast=True):
         if norm:
             x1 = F.normalize(x1, p=2, dim=1)
-            x2 = F.normalize(x2, p=2, dim=1)
+            # x2 = F.normalize(x2, p=2, dim=1)
         bs, c, h, w = x1.shape
         padded_x2 = F.pad(x2, [search_range] * 4)  # [b,c,h,w] -> [b,c,h+sr*2,w+sr*2]
         max_offset = search_range * 2 + 1
@@ -277,7 +277,7 @@ class HEstimatorOrigin(HEstimator):
 
             H = torch.bmm(torch.bmm(M_inv.expand(bs, -1, -1), H), M.expand(bs, -1, -1))
 
-            feature2[-(i + 2)] = STN(feature2[-(i + 2)], H, vertices_offsets)
+            feature2[-(i + 2)] = STN(F.normalize(feature2[-(i + 2)], p=2, dim=1), H, vertices_offsets)
 
         warped_imgs, warped_msks = [], []
         patch_level = 0
