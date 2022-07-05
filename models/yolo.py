@@ -178,7 +178,7 @@ class HEstimator(nn.Module):
     def cost_volume(x1, x2, search_range, norm=True, fast=True):
         if norm:
             x1 = F.normalize(x1, p=2, dim=1)
-            # x2 = F.normalize(x2, p=2, dim=1)
+            x2 = F.normalize(x2, p=2, dim=1)
         bs, c, h, w = x1.shape
         padded_x2 = F.pad(x2, [search_range] * 4)  # [b,c,h,w] -> [b,c,h+sr*2,w+sr*2]
         max_offset = search_range * 2 + 1
@@ -257,7 +257,7 @@ class HEstimatorOrigin(HEstimator):
         for i, search_range in enumerate(self.search_ranges):
             # global_correlation is either time-consuming or memory-consuming, and even leads to divergence
             # concatenation seems to be capable enough for estimation
-            x = self.cost_volume(feature1[-(i+1)], feature2[-(i+1)], search_range)
+            x = self.cost_volume(F.normalize(feature1[-(i+1)], p=2, dim=1), F.normalize(feature2[-(i+1)], p=2, dim=1) if i == 0 else feature2[-(i+1)], search_range, norm = False)
             # x = torch.cat((feature1[-(i+1)], feature2[-(i+1)]), dim=1)
             
             off = self.m[i](x).unsqueeze(-1)  # [bs, 8, 1], for matrix multiplication
