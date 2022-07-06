@@ -62,6 +62,7 @@ class ConvWoBN(nn.Module):
         super(ConvWoBN, self).__init__()
         self.conv = nn.Conv2d(c1, c2, k, s, autopad(k, p), dilation=d, groups=g, bias=True)
         self.act = nn.ReLU(inplace=True) if act is True else (act if isinstance(act, nn.Module) else nn.Identity())
+        nn.init.xavier_normal_(self.conv.weight, gain = 2.0)
 
     def forward(self, x):
         return self.act(self.conv(x))

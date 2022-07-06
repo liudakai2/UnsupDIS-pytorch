@@ -257,7 +257,7 @@ class HEstimatorOrigin(HEstimator):
         for i, search_range in enumerate(self.search_ranges):
             # global_correlation is either time-consuming or memory-consuming, and even leads to divergence
             # concatenation seems to be capable enough for estimation
-            x = self.cost_volume(feature1[-(i+1)], feature2[-(i+1)], search_range)
+            x = self.cost_volume(F.normalize(feature1[-(i+1)], p=2, dim=1), F.normalize(feature2[-(i+1)], p=2, dim=1) if i == 0 else feature2[-(i+1)], search_range, norm = False)
             # x = torch.cat((feature1[-(i+1)], feature2[-(i+1)]), dim=1)
             
             off = self.m[i](x).unsqueeze(-1)  # [bs, 8, 1], for matrix multiplication
@@ -277,7 +277,7 @@ class HEstimatorOrigin(HEstimator):
 
             H = torch.bmm(torch.bmm(M_inv.expand(bs, -1, -1), H), M.expand(bs, -1, -1))
 
-            feature2[-(i + 2)] = STN(feature2[-(i + 2)], H, vertices_offsets)
+            feature2[-(i + 2)] = STN(F.normalize(feature2[-(i + 2)], p=2, dim=1), H, vertices_offsets)
 
         warped_imgs, warped_msks = [], []
         patch_level = 0
