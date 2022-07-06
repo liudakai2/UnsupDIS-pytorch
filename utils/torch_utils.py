@@ -102,7 +102,7 @@ def initialize_weights(model):
 def intersect_dicts(da, db, exclude=()):
     # Dictionary intersection of matching keys and shapes, omitting 'exclude' keys, using da values
     k0 = 'model.0.conv.conv.weight'  # Focus2
-    if da[k0].shape != db[k0].shape:  # out_ch, in_ch, ksize, ksize
+    if k0 in da and k0 in db and da[k0].shape != db[k0].shape:  # out_ch, in_ch, ksize, ksize
         assert da[k0].shape[1] * 2 == db[k0].shape[1], f'{da[k0].shape} {db[k0].shape}'  # in_ch
         da[k0] = torch.cat((da[k0], da[k0]), dim=1)  #
         print('Warning: shared conv weights in Focus2')
