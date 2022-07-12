@@ -28,8 +28,8 @@ def parse_source(source, task, imgsz, reg_mode):
         path = path.replace('UDIS-D', 'UDIS-D/warp').replace('input1/', '')
         base_name = basename(path)
         img_name = base_name[:-4]
-        img1 = cv2.imread(path.replace(base_name, f'{img_name}_warp1.png'))
-        img2 = cv2.imread(path.replace(base_name, f'{img_name}_warp2.png'))
+        img1 = cv2.imread(path.replace(base_name, f'{img_name}_warp1.jpg'))
+        img2 = cv2.imread(path.replace(base_name, f'{img_name}_warp2.jpg'))
         msk1 = cv2.imread(path.replace(base_name, f'{img_name}_mask1.png'))
         msk2 = cv2.imread(path.replace(base_name, f'{img_name}_mask2.png'))
         image_raw = np.concatenate((img1, msk1[..., :1], img2, msk2[..., :1]), axis=-1)
@@ -133,7 +133,7 @@ def detect():
         t3 = time_synchronized()
 
         img_name = basename(path)[:-4]
-        cv2.imwrite(str(save_dir / (img_name + '.png')), pred)
+        cv2.imwrite(str(save_dir / (img_name + '.jpg')), pred)
         # (optional)
         # cv2.imwrite(str(save_dir / (img_name + '_raw.jpg')), overlapped)
         # if count >= 20:
