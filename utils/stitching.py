@@ -253,7 +253,7 @@ def Stitching_Domain_STN(inputs, size_tensor, resized_shift):
         x = torch.mm(x.reshape(-1, 1), rep)
         return x.reshape(-1)
     
-    def _interpolate(im, x, y, out_size):
+    def _interpolate(im, x, y, out_size, size_tensor):
         # constants
         num_batch, channels, height, width = im.shape
         device = im.device
@@ -266,6 +266,8 @@ def Stitching_Domain_STN(inputs, size_tensor, resized_shift):
         # effect values will exceed [-1, 1], so clamp is unnecessary or even incorrect
         # x = (x + 1.0) * width_f / 2.0
         # y = (y + 1.0) * height_f / 2.0
+        x = x / (size_tensor[0] - 1) * size_tensor[0]
+        y = y / (size_tensor[1] - 1) * size_tensor[1]
         
         # do sampling
         x0 = x.floor().int()
@@ -308,7 +310,7 @@ def Stitching_Domain_STN(inputs, size_tensor, resized_shift):
         return output  # .clamp(0., 1.) stupid
     
     def _meshgrid(width_max, width_min, height_max, height_min):
-        width, height = (width_max - width_min).long(), (height_max - height_min).long()
+        width, height = (width_max - width_min + 1).long(), (height_max - height_min + 1).long()
         x_t = torch.mm(torch.ones(height, 1), torch.linspace(width_min, width_max, width).unsqueeze(0))
         y_t = torch.mm(torch.linspace(height_min, height_max, height).unsqueeze(1), torch.ones(1, width))
         
@@ -319,14 +321,14 @@ def Stitching_Domain_STN(inputs, size_tensor, resized_shift):
         grid = torch.cat([x_t_flat, y_t_flat, ones], dim=0)
         return grid
     
-    def _transform(image_tf, H_tf, width_max, width_min, height_max, height_min):
+    def _transform(image_tf, H_tf, width_max, width_min, height_max, height_min, size_tensor):
         bs, nc, height, width = image_tf.shape
         device = image_tf.device
         
         H_tf = H_tf.reshape(-1, 3, 3).float()
         # grid of (x_t, y_t, 1)
-        out_width = (width_max - width_min).long()
-        out_height = (height_max - height_min).long()
+        out_width = (width_max - width_min + 1).long()
+        out_height = (height_max - height_min + 1).long()
         grid = _meshgrid(width_max, width_min, height_max, height_min).unsqueeze(0).expand(bs, -1, -1).to(device)
         
         # Transform A x (x_t, y_t, 1)^T -> (x_s, y_s)
@@ -343,7 +345,7 @@ def Stitching_Domain_STN(inputs, size_tensor, resized_shift):
         x_s_flat = x_s.reshape(-1) / t_s_flat
         y_s_flat = y_s.reshape(-1) / t_s_flat
         
-        input_transformed = _interpolate(image_tf, x_s_flat, y_s_flat, (out_height, out_width))
+        input_transformed = _interpolate(image_tf, x_s_flat, y_s_flat, (out_height, out_width), size_tensor)
         
         output = input_transformed.reshape(bs, out_height, out_width, nc).permute(0, 3, 1, 2)
         
@@ -351,13 +353,13 @@ def Stitching_Domain_STN(inputs, size_tensor, resized_shift):
 
     bs, device, dtype = resized_shift.size(0), resized_shift.device, resized_shift.dtype
     vertices = torch.tensor([0, 0, 1, 0, 0, 1, 1, 1], device=device, dtype=dtype)
-    pts_1 = (vertices * size_tensor.repeat(4)).reshape(1, 8, 1)
+    pts_1 = (vertices * (size_tensor - 1).repeat(4)).reshape(1, 8, 1)
     pts_2 = pts_1 + resized_shift
     pts = torch.cat((pts_1, pts_2), dim=0).reshape(8, 2)
     pts_x, pts_y = pts.T
-    width_max, width_min, height_max, height_min = pts_x.max(), pts_x.min(), pts_y.max(), pts_y.min()
-    out_width = (width_max - width_min).long().item()
-    out_height = (height_max - height_min).long().item()
+    width_max, width_min, height_max, height_min = pts_x.max().ceil(), pts_x.min().floor(), pts_y.max().ceil(), pts_y.min().floor()
+    out_width = (width_max - width_min + 1).long().item()
+    out_height = (height_max - height_min + 1).long().item()
     
     org, dst = pts[:4].float().cpu().numpy(), pts[4:].cpu().numpy()
     # H_tf = cv2.getPerspectiveTransform(org, dst)
@@ -367,9 +369,9 @@ def Stitching_Domain_STN(inputs, size_tensor, resized_shift):
     img1, img2 = inputs.chunk(2, dim=1)  # pure image
     img1, img2 = torch.cat((img1, torch.ones_like(img1[:, :1, :, :])), dim=1), \
                  torch.cat((img2, torch.ones_like(img2[:, :1, :, :])), dim=1)  # image with mask
-    H_one = torch.eye(3, dtype=dtype, device=device)
-    img1_tf = _transform(img1, H_one, width_max, width_min, height_max, height_min)
-    img2_tf = _transform(img2, H_tf, width_max, width_min, height_max, height_min)
+    pad = [(0 - width_min).long(), (width_max - size_tensor[0] + 1).long(), (0 - height_min).long(), (height_max - size_tensor[1] + 1).long()]
+    img1_tf = torch.nn.functional.pad(img1, pad)
+    img2_tf = _transform(img2, H_tf, width_max, width_min, height_max, height_min, size_tensor)
     
     output = torch.cat((img1_tf, img2_tf), dim=1)
 
