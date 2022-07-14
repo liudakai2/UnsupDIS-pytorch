@@ -3,7 +3,7 @@ ch: 3
 depth_multiple: 1.00  # model depth multiple
 width_multiple: 1.00  # layer channel multiple
 
-# YOLOv5 backbone
+# backbone
 backbone:
   # [from, number, module, args]
   [[-1, 1, Conv, [64, 3, 1, None, 1, True, 1, 'HIN']],
@@ -22,5 +22,5 @@ backbone:
 # head
 head:
   [[[4, 7, 10], 1, nn.Identity, []],
-   [-1, 1, HEstimatorVariant, [128, [2,4,8], 0.5]],
+   [-1, 1, HEstimator, [128, [2,4,8], 0.5, 'HIN']],
   ]

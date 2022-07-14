@@ -3,24 +3,24 @@ ch: 3
 depth_multiple: 1.00  # model depth multiple
 width_multiple: 1.00  # layer channel multiple
 
-# YOLOv5 backbone
+# backbone
 backbone:
   # [from, number, module, args]
-  [[-1, 1, ConvWoBN, [64, 3, 1]],
-   [-1, 1, ConvWoBN, [64, 3, 1]],
+  [[-1, 1, Conv, [64, 3, 1, None, 1, True, 1, 'None']],
+   [-1, 1, Conv, [64, 3, 1, None, 1, True, 1, 'None']],
    [-1, 1, nn.MaxPool2d, [2, 2]],  # 2-P1/2
-   [-1, 1, ConvWoBN, [64, 3, 1]],
-   [-1, 1, ConvWoBN, [64, 3, 1]],
+   [-1, 1, Conv, [64, 3, 1, None, 1, True, 1, 'None']],
+   [-1, 1, Conv, [64, 3, 1, None, 1, True, 1, 'None']],
    [-1, 1, nn.MaxPool2d, [2, 2]],  # 5-P2/4
-   [-1, 1, ConvWoBN, [128, 3, 1]],
-   [-1, 1, ConvWoBN, [128, 3, 1]],
+   [-1, 1, Conv, [128, 3, 1, None, 1, True, 1, 'None']],
+   [-1, 1, Conv, [128, 3, 1, None, 1, True, 1, 'None']],
    [-1, 1, nn.MaxPool2d, [2, 2]],  # 8-P3/8
-   [-1, 1, ConvWoBN, [128, 3, 1]],
-   [-1, 1, ConvWoBN, [128, 3, 1]],
+   [-1, 1, Conv, [128, 3, 1, None, 1, True, 1, 'None']],
+   [-1, 1, Conv, [128, 3, 1, None, 1, True, 1, 'None']],
   ]
 
 # head
 head:
   [[[4, 7, 10], 1, nn.Identity, []],
-   [-1, 1, HEstimatorOrigin, [128, [2,4,8], 0.5]],
+   [-1, 1, HEstimatorOrigin, [128, [2,4,8], 0.5, 'None']],
   ]

@@ -3,52 +3,52 @@ ch: 6  # 2 images
 depth_multiple: 1.00  # model depth multiple
 width_multiple: 1.00  # layer channel multiple
 
-# YOLOv5 backbone
+# backbone
 backbone:
   # [from, number, module, args]
   [[-1, 1, nn.Identity, []],  # 0-HR_inputs
    [-1, 1, Resizer, [256, 'square', 'bilinear']],  # 1-LR_inputs
 
-   [-1, 1, ConvWoBN, [64, 3, 1]],
-   [-1, 1, ConvWoBN, [64, 3, 1]],
+   [-1, 1, Conv, [64, 3, 1, None, 1, True, 1, 'None']],
+   [-1, 1, Conv, [64, 3, 1, None, 1, True, 1, 'None']],
    [-1, 1, nn.MaxPool2d, [2, 2]],  # 4-P1/2
-   [-1, 1, ConvWoBN, [128, 3, 1]],
-   [-1, 1, ConvWoBN, [128, 3, 1]],
+   [-1, 1, Conv, [128, 3, 1, None, 1, True, 1, 'None']],
+   [-1, 1, Conv, [128, 3, 1, None, 1, True, 1, 'None']],
    [-1, 1, nn.MaxPool2d, [2, 2]],  # 7-P2/4
-   [-1, 1, ConvWoBN, [256, 3, 1]],
-   [-1, 1, ConvWoBN, [256, 3, 1]],
+   [-1, 1, Conv, [256, 3, 1, None, 1, True, 1, 'None']],
+   [-1, 1, Conv, [256, 3, 1, None, 1, True, 1, 'None']],
    [-1, 1, nn.MaxPool2d, [2, 2]],  # 10-P3/8
-   [-1, 1, ConvWoBN, [512, 3, 1]],
-   [-1, 1, ConvWoBN, [512, 3, 1]],
+   [-1, 1, Conv, [512, 3, 1, None, 1, True, 1, 'None']],
+   [-1, 1, Conv, [512, 3, 1, None, 1, True, 1, 'None']],
 
    [-1, 1, nn.Upsample, [None, 2, 'nearest']],
    [[-1, 9], 1, Concat, [1]],  # cat encoder P2
-   [-1, 1, ConvWoBN, [256, 3, 1]],
-   [-1, 1, ConvWoBN, [256, 3, 1]],
+   [-1, 1, Conv, [256, 3, 1, None, 1, True, 1, 'None']],
+   [-1, 1, Conv, [256, 3, 1, None, 1, True, 1, 'None']],
    [-1, 1, nn.Upsample, [None, 2, 'nearest']],
    [[-1, 6], 1, Concat, [1]],  # cat encoder P1
-   [-1, 1, ConvWoBN, [128, 3, 1]],
-   [-1, 1, ConvWoBN, [128, 3, 1]],
+   [-1, 1, Conv, [128, 3, 1, None, 1, True, 1, 'None']],
+   [-1, 1, Conv, [128, 3, 1, None, 1, True, 1, 'None']],
    [-1, 1, nn.Upsample, [None, 2, 'nearest']],
    [[-1, 3], 1, Concat, [1]],  # cat encoder P0
-   [-1, 1, ConvWoBN, [64, 3, 1]],
-   [-1, 1, ConvWoBN, [64, 3, 1]],
+   [-1, 1, Conv, [64, 3, 1, None, 1, True, 1, 'None']],
+   [-1, 1, Conv, [64, 3, 1, None, 1, True, 1, 'None']],
 
-   [-1, 1, ConvWoBN, [3, 3, 1, None, 1, False]], # act=False
+   [-1, 1, Conv, [3, 3, 1, None, 1, False, 1, 'None']], # act=False
    [-1, 1, nn.Sigmoid, []],  # 26-LR_outputs
   ]
 
-# YOLOv5 head
+# head
 head:
   [[[-1, 0], 1, Resizer, [-1, 'square', 'bilinear']],  # 27-LR_SR
    [[-1, 0], 1, Concat, [1]],  # cat HR_inputs
 
-   [-1, 1, ConvWoBN, [64, 3, 1]],
+   [-1, 1, Conv, [64, 3, 1, None, 1, True, 1, 'None']],
    [-1, 8, ResBlock, [64]],
-   [-2, 1, ConvWoBN, [64, 3, 1, None, 1, False]], # act=False
+   [-2, 1, Conv, [64, 3, 1, None, 1, False, 1, 'None']], # act=False
    [[-1, -3], 1, Add, [True]],  # the outs before and after resBlock
 
-   [-1, 1, ConvWoBN, [3, 3, 1, None, 1, False]], # act=False
+   [-1, 1, Conv, [3, 3, 1, None, 1, False, 1, 'None']], # act=False
    [-1, 1, nn.Sigmoid, []],  # 34-HR_outputs
 
    [[26, 34], 1, nn.Identity, []],  # Reconstructor(out_lr, out_hr)
