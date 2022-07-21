@@ -21,6 +21,7 @@ This repo allows you to finish the whole training process (including alignment a
 |fuse-origin               |-         |-          |-          |-         |-          |8.0     |605.3
 |[fuse-yolo][assets]       |-         |-          |-          |-         |-          |**4.4** |**74.8**
 
+<small>\* The original model size exceeds github's release limitation (2GB). You are free to train a model with the provided commands.</small>
 
 ## Installation
 [**Python>=3.6**](https://www.python.org/) is required with all
