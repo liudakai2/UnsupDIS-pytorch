@@ -10,97 +10,16 @@ This repo allows you to finish the whole training process (including alignment a
 
 ## Pretrained Checkpoints
 
-<!-- [assets]: https://github.com/liudakai2/UnsupDIS-pytorch/releases -->
+[assets]: https://github.com/liudakai2/UnsupDIS-pytorch/releases
 
-<!-- <style type="text/css">
-.tg  {border-collapse:collapse;border-spacing:0;}
-.tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
-  overflow:hidden;padding:10px 5px;word-break:normal;}
-.tg th{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
-  font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
-.tg .tg-9wq8{border-color:inherit;text-align:center;vertical-align:middle}
-.tg .tg-nrix{text-align:center;vertical-align:middle}
-</style> -->
-<table class="tg" style='text-align:center;vertical-align:middle'>
-<thead>
-  <tr>
-    <th class="tg-9wq8" colspan="2" rowspan="2">Model</th>
-    <th class="tg-9wq8" colspan="3">Warped MS COCO</th>
-    <th class="tg-nrix" colspan="2">UDIS-D</th>
-    <th class="tg-nrix" rowspan="2">Param(M)</th>
-    <th class="tg-nrix" rowspan="2">GFLOPs</th>
-  </tr>
-  <tr>
-    <th class="tg-9wq8">PSNR</th>
-    <th class="tg-9wq8">SSIM</th>
-    <th class="tg-9wq8">RMSE</th>
-    <th class="tg-nrix">PSNR</th>
-    <th class="tg-nrix">SSIM</th>
-  </tr>
-</thead>
-<tbody>
-  <tr>
-    <td class="tg-9wq8" rowspan="4">Align</td>
-    <td class="tg-9wq8"><a href="https://github.com/liudakai2/UnsupDIS-pytorch/releases">origin.tf</a></td>
-    <td class="tg-9wq8">-</td>
-    <td class="tg-9wq8">-</td>
-    <td class="tg-9wq8">2.0239</td>
-    <td class="tg-nrix">23.80</td>
-    <td class="tg-nrix">0.7929</td>
-    <td class="tg-nrix" rowspan="2">180</td>
-    <td class="tg-nrix" rowspan="2">14.3</td>
-  </tr>
-  <tr>
-    <td class="tg-9wq8"><a href="https://github.com/liudakai2/UnsupDIS-pytorch/releases">origin</a></td>
-    <td class="tg-9wq8">33.95</td>
-    <td class="tg-9wq8">0.9481</td>
-    <td class="tg-9wq8">2.0695</td>
-    <td class="tg-nrix">26.34</td>
-    <td class="tg-nrix">0.8589</td>
-  </tr>
-  <tr>
-    <td class="tg-nrix"><a href="https://github.com/liudakai2/UnsupDIS-pytorch/releases">yolo</a></td>
-    <td class="tg-nrix">36.64</td>
-    <td class="tg-nrix">0.9657</td>
-    <td class="tg-nrix" style='font-weight:bold'>1.7241</td>
-    <td class="tg-nrix" style='font-weight:bold'>26.53</td>
-    <td class="tg-nrix" style='font-weight:bold'>0.8641</td>
-    <td class="tg-nrix">15</td>
-    <td class="tg-nrix">14.5</td>
-  </tr>
-  <tr>
-    <td class="tg-nrix"><a href="https://github.com/liudakai2/UnsupDIS-pytorch/releases">variant</a></td>
-    <td class="tg-nrix" style='font-weight:bold'>37.33</td>
-    <td class="tg-nrix" style='font-weight:bold'>0.9704</td>
-    <td class="tg-nrix">1.7614</td>
-    <td class="tg-nrix" style='font-weight:bold'>26.53</td>
-    <td class="tg-nrix" style='font-weight:bold'>0.8622</td>
-    <td class="tg-nrix" style='font-weight:bold'>9.7</td>
-    <td class="tg-nrix" style='font-weight:bold'>12.3</td>
-  </tr>
-  <tr>
-    <td class="tg-nrix" rowspan="2">Fuse</td>
-    <td class="tg-nrix">origin</td>
-    <td class="tg-nrix">-</td>
-    <td class="tg-nrix">-</td>
-    <td class="tg-nrix">-</td>
-    <td class="tg-nrix">-</td>
-    <td class="tg-nrix">-</td>
-    <td class="tg-nrix">8</td>
-    <td class="tg-nrix">605.3</td>
-  </tr>
-  <tr>
-    <td class="tg-nrix"><a href="https://github.com/liudakai2/UnsupDIS-pytorch/releases">yolo</a></td>
-    <td class="tg-nrix">-</td>
-    <td class="tg-nrix">-</td>
-    <td class="tg-nrix">-</td>
-    <td class="tg-nrix">-</td>
-    <td class="tg-nrix">-</td>
-    <td class="tg-nrix">4.4</td>
-    <td class="tg-nrix" style='font-weight:bold'>74.8</td>
-  </tr>
-</tbody>
-</table>
+|Model |COCO<br>PSNR |COCO<br>SSIM |COCO<br>RMSE |UDIS<br>PSNR |UDIS<br>SSIM |Params(M) |GFLOPs
+|---                       |:-:       |:-:        |:-:        |:-:       |:-:        |:-:     |:-:
+|[align-origin.tf][assets] |-         |-          |2.0239     |23.80     |0.7929     |180.0   |14.3
+|[align-origin][assets]    |33.95     |0.9481     |2.0695     |26.34     |0.8589     |180.0   |14.3
+|[align-yolo][assets]      |36.64     |0.9657     |**1.7241** |**26.53** |**0.8641** |15.0    |14.5
+|[align-variant][assets]   |**37.33** |**0.9704** |1.7614     |**26.53** |0.8622     |**9.7** |**12.3**
+|[fuse-origin][assets]     |-         |-          |-          |-         |-          |8.0     |605.3
+|[fuse-yolo][assets]       |-         |-          |-          |-         |-          |**4.4** |**74.8**
 
 
 ## Installation
