@@ -12,6 +12,7 @@ This repo allows you to finish the whole training process (including alignment a
 
 [assets]: https://github.com/liudakai2/UnsupDIS-pytorch/releases
 
+<escape>
 <style type="text/css">
 .tg  {border-collapse:collapse;border-spacing:0;}
 .tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
@@ -101,6 +102,7 @@ This repo allows you to finish the whole training process (including alignment a
   </tr>
 </tbody>
 </table>
+</escape>
 
 
 ## Installation
