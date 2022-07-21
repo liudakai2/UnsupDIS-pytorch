@@ -5,7 +5,7 @@ The official implementation is [here](https://github.com/nie-lang/UnsupervisedDe
 This repo allows you to finish the whole training process (including alignment and reconstruction) within 1 day. This repo makes it possible to be a real-time application during inference.
 
 ## Results
-![image](https://github.com/liudakai2/UnsupDIS-pytorch/blob/master/assets/sample.png)
+![image](https://github.com/liudakai2/UnsupDIS-pytorch/blob/main/assets/sample.jpg)
 
 
 ## Pretrained Checkpoints
