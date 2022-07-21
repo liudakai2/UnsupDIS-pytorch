@@ -14,11 +14,11 @@ This repo allows you to finish the whole training process (including alignment a
 
 |Model |COCO<br>PSNR |COCO<br>SSIM |COCO<br>RMSE |UDIS<br>PSNR |UDIS<br>SSIM |Params(M) |GFLOPs
 |---                       |:-:       |:-:        |:-:        |:-:       |:-:        |:-:     |:-:
-|[align-origin.tf][assets] |-         |-          |2.0239     |23.80     |0.7929     |180.0   |14.3
-|[align-origin][assets]    |33.95     |0.9481     |2.0695     |26.34     |0.8589     |180.0   |14.3
+|align-origin.tf           |-         |-          |2.0239     |23.80     |0.7929     |180.0   |14.3
+|align-origin              |33.95     |0.9481     |2.0695     |26.34     |0.8589     |180.0   |14.3
 |[align-yolo][assets]      |36.64     |0.9657     |**1.7241** |**26.53** |**0.8641** |15.0    |14.5
 |[align-variant][assets]   |**37.33** |**0.9704** |1.7614     |**26.53** |0.8622     |**9.7** |**12.3**
-|[fuse-origin][assets]     |-         |-          |-          |-         |-          |8.0     |605.3
+|fuse-origin               |-         |-          |-          |-         |-          |8.0     |605.3
 |[fuse-yolo][assets]       |-         |-          |-          |-         |-          |**4.4** |**74.8**
 
 
