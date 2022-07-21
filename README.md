@@ -10,10 +10,9 @@ This repo allows you to finish the whole training process (including alignment a
 
 ## Pretrained Checkpoints
 
-[assets]: https://github.com/liudakai2/UnsupDIS-pytorch/releases
+<!-- [assets]: https://github.com/liudakai2/UnsupDIS-pytorch/releases -->
 
-<escape>
-<style type="text/css">
+<!-- <style type="text/css">
 .tg  {border-collapse:collapse;border-spacing:0;}
 .tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
   overflow:hidden;padding:10px 5px;word-break:normal;}
@@ -21,8 +20,8 @@ This repo allows you to finish the whole training process (including alignment a
   font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
 .tg .tg-9wq8{border-color:inherit;text-align:center;vertical-align:middle}
 .tg .tg-nrix{text-align:center;vertical-align:middle}
-</style>
-<table class="tg">
+</style> -->
+<table class="tg" style='text-align:center;vertical-align:middle'>
 <thead>
   <tr>
     <th class="tg-9wq8" colspan="2" rowspan="2">Model</th>
@@ -46,7 +45,7 @@ This repo allows you to finish the whole training process (including alignment a
     <td class="tg-9wq8">-</td>
     <td class="tg-9wq8">-</td>
     <td class="tg-9wq8">2.0239</td>
-    <td class="tg-nrix">23.8</td>
+    <td class="tg-nrix">23.80</td>
     <td class="tg-nrix">0.7929</td>
     <td class="tg-nrix" rowspan="2">180</td>
     <td class="tg-nrix" rowspan="2">14.3</td>
@@ -102,7 +101,6 @@ This repo allows you to finish the whole training process (including alignment a
   </tr>
 </tbody>
 </table>
-</escape>
 
 
 ## Installation
