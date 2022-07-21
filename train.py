@@ -112,10 +112,11 @@ def train(opt):
     for k, v in model.named_modules():
         if hasattr(v, 'bias') and isinstance(v.bias, nn.Parameter):
             pg2.append(v.bias)  # biases
-        if isinstance(v, nn.BatchNorm2d):
-            pg0.append(v.weight)  # no decay
-        elif hasattr(v, 'weight') and isinstance(v.weight, nn.Parameter):
-            pg1.append(v.weight)  # apply decay
+        if hasattr(v, 'weight') and isinstance(v.weight, nn.Parameter):
+            if any(isinstance(v, norm) for norm in [nn.BatchNorm2d, nn.InstanceNorm2d, nn.GroupNorm, nn.LayerNorm]):
+                pg0.append(v.weight)  # no decay
+            else:
+                pg1.append(v.weight)  # apply decay
             
     if opt.adam:
         optimizer = optim.Adam(pg2, lr=hyp['lr0'], betas=(hyp['momentum'], 0.999))  # adjust beta1 to momentum
@@ -249,8 +250,12 @@ def train(opt):
             # Forward
             # torch.autograd.set_detect_anomaly(True)
             with amp.autocast(enabled=cuda):
-                # try:
-                pred = model(imgs, mode_align=mode_align)  # forward
+                try:
+                    pred = model(imgs, mode_align=mode_align)  # forward
+                except AssertionError as e:
+                    print('Warning: NaN occurs, ignore this batch.')
+                    optimizer.zero_grad()
+                    continue
                 loss, loss_items = compute_loss(pred, imgs)  # loss scaled by batch_size
                 # check_align_input(imgs, _exit=False, normalized=True)
                 # check_align_output(*pred[1:], _exit=True)

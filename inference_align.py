@@ -30,6 +30,10 @@ def parse_source(source, imgsz):
     for path in source:
         img_left = cv2.imread(path)
         img_right = cv2.imread(path.replace('input1', 'input2'))
+
+        # TODO: swap img1 and img2 (default or optional)
+        if is_coco and opt.rmse:
+            img_left, img_right = img_right, img_left
         
         height, width = img_right.shape[:2]
         size_tensor = torch.tensor([width, height])
@@ -44,10 +48,6 @@ def parse_source(source, imgsz):
             img1, img2 = img_left, img_right
         msk1 = np.ones_like(img1[..., :1])
         msk2 = np.ones_like(img2[..., :1])
-
-        # TODO: swap img1 and img2 (optional)
-        if is_coco and opt.rmse:
-            img1, img2 = img2, img1
         
         image = np.concatenate((msk1, img1, msk2, img2), axis=-1)
         imgs_raw = np.concatenate((img_left, img_right), axis=-1)

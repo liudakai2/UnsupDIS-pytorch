@@ -113,7 +113,7 @@ class HEstimator(nn.Module):
                     Conv(ch1, ch_conv, k=3, s=1, norm=norm),
                     Conv(ch_conv, ch_conv, k=3, s=2 if i >= 2 else 1, norm=norm),  # stage 2
                     Conv(ch_conv, ch_conv, k=3, s=2 if i >= 1 else 1, norm=norm),  # stage 2 & 3
-                    DWConv(ch_conv, ch_conv, k=k, s=s, p=p, norm='BN'),
+                    DWConv(ch_conv, ch_conv, k=k, s=s, p=p, norm='BN'),  # TODO: DWConv is special. BN seems better.
                     # nn.AvgPool2d(k, s, p),
                     # nn.AdaptiveAvgPool2d((s, s)),
                     nn.Flatten(),
@@ -258,7 +258,7 @@ class HEstimatorOrigin(HEstimator):
 
 
 class Reconstructor(nn.Module):
-    def __init__(self, ch=()):
+    def __init__(self, norm='BN', ch=()):
         super(Reconstructor, self).__init__()
         ch_lr = ch[0]
         self.m_lr = nn.Sequential(
@@ -267,8 +267,8 @@ class Reconstructor(nn.Module):
             nn.Conv2d(ch_lr, 3, kernel_size=3, stride=1, padding=1, bias=False),
         )
         self.m_hr = nn.Sequential(
-            Conv(3 * 3, 64, norm='BN'),
-            C3(64, 64, 3, norm='BN'),
+            Conv(3 * 3, 64, norm=norm),
+            C3(64, 64, 3, norm=norm),
             nn.Conv2d(64, 3, kernel_size=3, stride=1, padding=1, bias=False),
         )
         self.stride = torch.tensor([4, 32])  # fake
@@ -365,7 +365,7 @@ class Model(nn.Module):
     def fuse(self):  # fuse model Conv2d() + BatchNorm2d() layers
         logger.info('Fusing layers... ')
         for m in self.model.modules():
-            if type(m) is Conv and hasattr(m, 'bn'):
+            if type(m) is Conv and hasattr(m, 'bn') and isinstance(m.bn, nn.BatchNorm2d):
                 m.conv = fuse_conv_and_bn(m.conv, m.bn)  # update conv
                 delattr(m, 'bn')  # remove batchnorm
                 m.forward = m.fuseforward  # update forward

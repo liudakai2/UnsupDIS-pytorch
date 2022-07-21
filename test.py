@@ -55,7 +55,8 @@ def test(data, weights=None, batch_size=32, imgsz=640, model=None, dataloader=No
     # Dataloader
     if not training:
         if device.type != 'cpu':
-            dummy = torch.zeros(1, 8 if mode_align else 6, imgsz, imgsz).to(device).type_as(next(model.parameters()))
+            dummy = torch.zeros((1, 8 if mode_align else 6, imgsz, imgsz), device=device,
+                                dtype=torch.float16 if half else torch.float32)
             model(dummy, mode_align=mode_align)  # run once
         task = opt.task if opt.task in ('train', 'val', 'test') else 'test'  # path to train/val/test images
         dataloader = create_dataloader(data[task], imgsz, batch_size, mode=opt.mode, reg_mode=opt.reg_mode, augment=False)[0]

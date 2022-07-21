@@ -23,14 +23,27 @@ def parse_norm_layer(norm, c2):
         # m = nn.GroupNorm(c2, c2)  # equivalent with InstanceNorm
         m = nn.InstanceNorm2d(c2)
     elif norm == 'HIN':
+        # HINet: Half Instance Normalization Network for Image Restoration
+        # https://arxiv.org/abs/2105.06086
         m = nn.InstanceNorm2d(c2 // 2)
     else:
         m = nn.Identity()
     return m
 
 
+def forward_norm_layer(x, norm, norm_type):
+    if norm_type == 'HIN':
+        x1, x2 = torch.chunk(x, 2, dim=1)
+        x2 = norm(x2)
+        x = torch.cat((x1, x2), dim=1)
+    else:
+        x = norm(x)
+    return x
+
+
 def DWConv(c1, c2, k=1, s=1, p=None, act=True, norm='BN'):
     # Depthwise convolution
+    assert norm == 'BN', 'Warning: depth-wise conv is recommended to take a batch-norm. Comment this line if needed.'
     return Conv(c1, c2, k, s, p=p, g=math.gcd(c1, c2), act=act, norm=norm)
 
 
@@ -42,7 +55,7 @@ class Conv(nn.Module):
         no_norm = norm == 'None' or norm is None
         self.conv = nn.Conv2d(c1, c2, k, s, autopad(k, p), dilation=d, groups=g, bias=no_norm)
         self.norm_type = norm
-        # preserve `bn' to be compatible with YOLO pre-trained weights if necessary
+        # preserve attribute `bn' to be compatible with YOLO pre-trained weights if necessary
         self.bn = parse_norm_layer(norm, c2)
         if act is True:
             self.act = nn.ReLU(inplace=True) if no_norm else nn.SiLU()
@@ -54,12 +67,7 @@ class Conv(nn.Module):
 
     def forward(self, x):
         out = self.conv(x)
-        if self.norm_type == 'HIN':
-            out1, out2 = torch.chunk(out, 2, dim=1)
-            out2 = self.bn(out2)
-            out = torch.cat((out1, out2), dim=1)
-        else:
-            out = self.bn(out)
+        out = forward_norm_layer(out, self.bn, self.norm_type)
         out = self.act(out)
         return out
 
@@ -271,11 +279,15 @@ class BottleneckCSP(nn.Module):
         self.bn = parse_norm_layer(norm, 2 * c_)  # applied to cat(cv2, cv3)
         self.act = nn.LeakyReLU(0.1, inplace=True)
         self.m = nn.Sequential(*[Bottleneck(c_, c_, shortcut, g, e=1.0, norm=norm) for _ in range(n)])
+        self.norm_type = norm
 
     def forward(self, x):
         y1 = self.cv3(self.m(self.cv1(x)))
         y2 = self.cv2(x)
-        return self.cv4(self.act(self.bn(torch.cat((y1, y2), dim=1))))
+        y = torch.cat((y1, y2), dim=1)
+        y = forward_norm_layer(y, self.bn, self.norm_type)
+        y = self.act(y)
+        return self.cv4(y)
 
 
 class C3(nn.Module):

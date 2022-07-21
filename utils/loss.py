@@ -126,7 +126,7 @@ class ComputeFuseLoss:
         assert len(stitched) == 2
         eps = 0.01
         stitched_lr, stitched_hr = stitched
-        stride = stitched_hr.shape[-1] // stitched_lr.shape[-1]
+        stride = stitched_hr.shape[-1] / stitched_lr.shape[-1]
         device = images.device
         lcontent_lr, lseam_lr = torch.zeros(1, device=device), torch.zeros(1, device=device)
         lcontent_hr, lseam_hr = torch.zeros(1, device=device), torch.zeros(1, device=device)
@@ -163,7 +163,7 @@ class ComputeFuseLoss:
     
     @staticmethod
     def downsample(x, mode='nearest', stride=4):
-        return F.interpolate(x, mode=mode, size=tuple([y // stride for y in x.shape[2:]]),
+        return F.interpolate(x, mode=mode, size=tuple([int(round(y / stride)) for y in x.shape[2:]]),
                              align_corners=False if mode == "bilinear" else None)
     
     @staticmethod

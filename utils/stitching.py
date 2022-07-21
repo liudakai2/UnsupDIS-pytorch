@@ -369,6 +369,8 @@ def Stitching_Domain_STN(inputs, size_tensor, resized_shift):
     img1, img2 = inputs.chunk(2, dim=1)  # pure image
     img1, img2 = torch.cat((img1, torch.ones_like(img1[:, :1, :, :])), dim=1), \
                  torch.cat((img2, torch.ones_like(img2[:, :1, :, :])), dim=1)  # image with mask
+    # H_one = torch.eye(3, dtype=dtype, device=device)
+    # img1_tf = _transform(img1, H_one, width_max, width_min, height_max, height_min, size_tensor)
     pad = [(0 - width_min).long(), (width_max - size_tensor[0] + 1).long(), (0 - height_min).long(), (height_max - size_tensor[1] + 1).long()]
     img1_tf = torch.nn.functional.pad(img1, pad)
     img2_tf = _transform(img2, H_tf, width_max, width_min, height_max, height_min, size_tensor)
