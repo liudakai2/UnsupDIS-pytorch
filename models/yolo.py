@@ -452,10 +452,11 @@ if __name__ == '__main__':
     # TODO: replace the `dist-packages/torchsummary/torchsummary.py` with `./models/torchsummary.py`
     #       or apply the corresponding changes in line 20\34\116 of `./models/torchsummary.py` on your `torchsummary/torchsummary.py`
     from torchsummary import summary
-    summary(model, (8, 128, 128))
+    input_size = (8, 128, 128) if opt.mode=='align' else (8, 640, 640)
+    summary(model, input_size)
 
     # Profile
-    # img = torch.rand(8 if torch.cuda.is_available() else 1, 3, 320, 320).to(device)
+    # img = torch.rand(1, *input_size).to(device)
     # y = model(img, profile=True)
 
     # Tensorboard (not working https://github.com/ultralytics/yolov5/issues/2898)
