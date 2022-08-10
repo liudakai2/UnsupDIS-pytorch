@@ -156,17 +156,26 @@ def model_info(model, verbose=False, img_size=640):
             print('%5g %40s %9s %12g %20s %10.3g %10.3g' %
                   (i, name, p.requires_grad, p.numel(), list(p.shape), p.mean(), p.std()))
 
-    try:  # FLOPs
+    def thop_forward(model_align):  # FLOPs
         from thop import profile
         # stride = max(int(model.stride.max()), 32) if hasattr(model, 'stride') else 32
         # img = torch.zeros((1, model.yaml.get('ch', 3), stride, stride), device=next(model.parameters()).device)  # input
-        model_align = False
         img_size = 128 if model_align else 640
         stride = img_size
         img = torch.zeros((1, 8, stride, stride), device=next(model.parameters()).device)  # input
         flops = profile(deepcopy(model), inputs=(img,False,model_align), verbose=False)[0] / 1E9 * 2  # stride GFLOPs
         img_size = img_size if isinstance(img_size, list) else [img_size, img_size]  # expand if int/float
         fs = ', %.1f GFLOPs' % (flops * img_size[0] / stride * img_size[1] / stride)  # 640x640 GFLOPs
+        return fs
+    
+    try:
+        fs = thop_forward(model_align=False)
+    except RuntimeError as e:
+        try:
+            fs = thop_forward(model_align=True)
+        except (ImportError, Exception) as e:
+            print(e)
+            fs = ''
     except (ImportError, Exception) as e:
         print(e)
         fs = ''

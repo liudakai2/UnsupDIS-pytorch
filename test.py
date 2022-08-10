@@ -51,13 +51,14 @@ def test(data, weights=None, batch_size=32, imgsz=640, model=None, dataloader=No
             data = yaml.safe_load(f)
     check_dataset(data)  # check
     mode_align = mode_align or (opt and opt.mode == 'align')
+    model.mode_align = mode_align
     
     # Dataloader
     if not training:
         if device.type != 'cpu':
             dummy = torch.zeros((1, 8 if mode_align else 6, imgsz, imgsz), device=device,
                                 dtype=torch.float16 if half else torch.float32)
-            model(dummy, mode_align=mode_align)  # run once
+            model(dummy)  # run once
         task = opt.task if opt.task in ('train', 'val', 'test') else 'test'  # path to train/val/test images
         dataloader = create_dataloader(data[task], imgsz, batch_size, mode=opt.mode, reg_mode=opt.reg_mode, augment=False)[0]
 
@@ -78,7 +79,7 @@ def test(data, weights=None, batch_size=32, imgsz=640, model=None, dataloader=No
 
         # Run model
         t = time_synchronized()
-        pred = model(imgs, mode_align=mode_align)  # training outputs
+        pred = model(imgs)  # training outputs
         t0 += time_synchronized() - t
         # check_align_input(imgs, _exit=False, normalized=True)
         # check_align_output(*pred[1:], _exit=True)
@@ -94,9 +95,9 @@ def test(data, weights=None, batch_size=32, imgsz=640, model=None, dataloader=No
                     crashed += 1
                     psnr_list.append(0)
                     ssim_list.append(0)
+                    print('ERROR: Warp Cashed. Results saved in ./tmp/')
                     check_align_input(imgs, _exit=False, normalized=True)
                     check_align_output(*pred[1:], _exit=True)
-                    continue
                 target_img = img_torch2numpy(target_imgs[i] * warped_mask)
                 warped_img = img_torch2numpy(warped_imgs[i] * warped_mask)
                 psnr_list.append(peak_signal_noise_ratio(target_img, warped_img, data_range=255))

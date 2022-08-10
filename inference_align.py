@@ -75,6 +75,7 @@ def infer():
 
     # Load model
     model = attempt_load(weights, map_location=device)  # load FP32 model
+    model.mode_align = True
     stride = int(model.stride.max())  # model stride
     imgsz = check_img_size(int(imgsz), s=stride) if imgsz > 1 else imgsz  # check img_size
     if half:
@@ -96,7 +97,7 @@ def infer():
 
         # Inference
         t1 = time_synchronized()
-        vertices_offsets, warped_imgs, warped_ones = model(imgs, mode_align=True)
+        vertices_offsets, warped_imgs, warped_ones = model(imgs)
         t2 = time_synchronized()
         # check_align_input(imgs, _exit=False, normalized=True)
         # check_align_output(warped_imgs, warped_ones, _exit=True)

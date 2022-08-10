@@ -288,21 +288,20 @@ class Reconstructor(nn.Module):
 
 
 class Model(nn.Module):
-    def __init__(self, cfg='yolov5s.yaml', ch=3):  # model, input channels
+    def __init__(self, cfg='yolov5s.yaml', ch=3, mode_align=True):  # model, input channels
         super(Model, self).__init__()
         if isinstance(cfg, dict):
             self.yaml = cfg  # model dict
-            fuse_mode = cfg['backbone'][0][2] == 'Focus2'
         else:  # is *.yaml
             import yaml  # for torch hub
             self.yaml_file = Path(cfg).name
             with open(cfg) as f:
                 self.yaml = yaml.safe_load(f)  # model dict
-            fuse_mode = 'fuse' in cfg
 
         # Define model
+        self.mode_align = mode_align
         self.ch = self.yaml['ch'] = self.yaml.get('ch', ch)  # input channels
-        ch = 6 if fuse_mode else 3
+        ch = 3 if mode_align else 6
         self.model, self.save = parse_model(deepcopy(self.yaml), ch=[ch])  # model, savelist
         self.inplace = self.yaml.get('inplace', True)
 
@@ -318,10 +317,11 @@ class Model(nn.Module):
         self.info()
         logger.info('')
 
-    def forward(self, x, profile=False, mode_align=False):
+    def forward(self, x, profile=False, mode_align=True):
         # x1/m1: right image/mask, x2/m2: left image/mask. warp x2(left image) to x1(right image)
         x1, m1, x2, m2 = torch.split(x, [3, 1, 3, 1], dim=1)  # channel dimension
-        
+
+        mode_align = self.mode_align if hasattr(self, 'mode_align') else mode_align  # TODO: compatible with old api
         if mode_align:
             module_range = (0, -1)
             feature1 = self.forward_once(x1, profile, module_range=module_range)
@@ -438,15 +438,21 @@ def parse_model(d, ch):  # model_dict, input_channels(3)
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--cfg', type=str, default='yolov5s.yaml', help='model.yaml')
-    parser.add_argument('--device', default='', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
+    parser.add_argument('--mode', type=str, default='align', choices=['align', 'fuse'], help='model mode')
+    parser.add_argument('--device', default='0', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
     opt = parser.parse_args()
     opt.cfg = check_file(opt.cfg)  # check file
     set_logging()
     device = select_device(opt.device)
 
     # Create model
-    model = Model(opt.cfg).to(device)
+    model = Model(opt.cfg, mode_align=opt.mode=='align').to(device)
     model.train()
+    
+    # TODO: replace the `dist-packages/torchsummary/torchsummary.py` with `./models/torchsummary.py`
+    #       or apply the corresponding changes in line 20\34\116 of `./models/torchsummary.py` on your `torchsummary/torchsummary.py`
+    from torchsummary import summary
+    summary(model, (8, 128, 128))
 
     # Profile
     # img = torch.rand(8 if torch.cuda.is_available() else 1, 3, 320, 320).to(device)

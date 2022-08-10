@@ -105,6 +105,7 @@ def detect():
 
     # Load model
     model = attempt_load(weights, map_location=device)  # load FP32 model
+    model.mode_align = False
     stride = int(model.stride.max())  # model stride
     imgsz = check_img_size(int(imgsz), s=stride) if imgsz > 1 else imgsz  # check img_size
     if half:
@@ -123,7 +124,7 @@ def detect():
 
         # Inference
         t1 = time_synchronized()
-        preds_lr, preds = model(imgs, mode_align=False)  # inference and training outputs
+        preds_lr, preds = model(imgs)  # inference and training outputs
         t2 = time_synchronized()
 
         # post_process(preds, imgs, seam_extractor)
