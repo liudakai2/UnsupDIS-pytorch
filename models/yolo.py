@@ -89,7 +89,7 @@ class HEstimator(nn.Module):
         self.strides = strides
         self.keep_prob = keep_prob
         self.search_ranges = [16, 8, 4]
-        self.patch_sizes = [32., 64., 128.]
+        self.patch_sizes = [input_size/4, input_size/2, input_size/1]
         # shape[2, 2, 3, 3]
         self.aux_matrices = torch.stack([self.gen_aux_mat(patch_size) for patch_size in self.patch_sizes])
         self.DLT_solver = DLTSolver()
