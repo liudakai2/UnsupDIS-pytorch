@@ -103,6 +103,7 @@ python3 inference_fuse.py --weights weights/fuse/udis/weights/best.pt --source d
 ```
 
 ## TODO
+- [ ] **FP16 Compatibility**: FP16 data-type may cause strange values in division operations.
 - [ ] **Fuse Optimization**: the hyp-params and  loss functions are not perfect right now.
 
 ## Comparison and Discussion
