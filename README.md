@@ -58,14 +58,14 @@ Download the pretrained backbones ([YOLOv5s](https://github.com/ultralytics/yolo
 #### Step 1 (Alignment): Unsupervised pre-training on Stitched MS-COCO
 
 ```bash
-python3 train.py --data data/warpedcoco.yaml --hyp data/hyp.align.scratch.yaml --cfg models/align.yaml --weights weights/yolov5l.pt --batch-size 64 --img-size 128 --epochs 50 --adam --device 0 --mode align
+python3 train.py --data data/warpedcoco.yaml --hyp data/hyp.align.scratch.yaml --cfg models/align.yaml --weights weights/yolov5l.pt --batch-size 64 --img-size 128 --epochs 150 --adam --device 0 --mode align
 mv runs/train/exp weights/align/warpedcoco
 ```
 
 #### Step 2 (Alignment): Unsupervised finetuning on UDIS-D
 
 ```bash
-python3 train.py --data data/udis.yaml --hyp data/hyp.align.finetune.yaml --cfg models/align.yaml --weights weights/align/warpedcoco/weights/best.pt --batch-size 64 --img-size 128 --epochs 30 --adam --device 0 --mode align
+python3 train.py --data data/udis.yaml --hyp data/hyp.align.finetune.yaml --cfg models/align.yaml --weights weights/align/warpedcoco/weights/best.pt --batch-size 64 --img-size 128 --epochs 50 --adam --device 0 --mode align
 mv runs/train/exp weights/align/udis
 ```
 
@@ -92,7 +92,7 @@ mv runs/infer/exp2 UDIS-D/warp/test
 #### Step 5 (Reconstruction): Training the reconstrction model on UDIS-D
 
 ```bash
-python3 train.py --data data/udis.yaml --hyp data/hyp.fuse.scratch.yaml --cfg models/fuse.yaml --weights weights/yolov5m.pt --batch-size 12 --img-size 640 --epochs 30 --adam --device 0 --mode fuse --reg-mode crop
+python3 train.py --data data/udis.yaml --hyp data/hyp.fuse.scratch.yaml --cfg models/fuse.yaml --weights weights/yolov5m.pt --batch-size 4 --img-size 640 --epochs 30 --adam --device 0 --mode fuse --reg-mode crop
 mv runs/train/exp weights/fuse/udis
 ```
 
